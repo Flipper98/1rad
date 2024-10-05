@@ -1,0 +1,81 @@
+<html>
+<head>
+<title>app.py</title>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<style type="text/css">
+.s0 { color: #cf8e6d;}
+.s1 { color: #bcbec4;}
+.s2 { color: #bcbec4;}
+.s3 { color: #7a7e85;}
+.s4 { color: #6aab73;}
+.s5 { color: #2aacb8;}
+</style>
+</head>
+<body bgcolor="#1e1f22">
+<table CELLSPACING=0 CELLPADDING=5 COLS=1 WIDTH="100%" BGCOLOR="#606060" >
+<tr><td><center>
+<font face="Arial, Helvetica" color="#000000">
+app.py</font>
+</center></td></tr></table>
+<pre><span class="s0">from </span><span class="s1">flask </span><span class="s0">import </span><span class="s1">Flask</span><span class="s2">, </span><span class="s1">render_template</span><span class="s2">, </span><span class="s1">request</span><span class="s2">, </span><span class="s1">jsonify</span>
+<span class="s0">import </span><span class="s1">json</span>
+<span class="s0">import </span><span class="s1">requests</span>
+
+<span class="s1">app </span><span class="s2">= </span><span class="s1">Flask</span><span class="s2">(</span><span class="s1">__name__</span><span class="s2">)</span>
+
+<span class="s3"># Конфигурация API Google Custom Search</span>
+<span class="s1">API_KEY </span><span class="s2">= </span><span class="s4">'AIzaSyDaE30UlvSu_pkRzUY_J2EWJmnoBY8UZZE'  </span><span class="s3"># Вставь свой API ключ</span>
+<span class="s1">CX_ID </span><span class="s2">= </span><span class="s4">'65020d36d904046cf'  </span><span class="s3"># Вставь свой cx идентификатор</span>
+
+
+<span class="s0">def </span><span class="s1">load_data</span><span class="s2">():</span>
+    <span class="s0">try</span><span class="s2">:</span>
+        <span class="s0">with </span><span class="s1">open</span><span class="s2">(</span><span class="s4">'data.json'</span><span class="s2">, </span><span class="s4">'r'</span><span class="s2">, </span><span class="s1">encoding</span><span class="s2">=</span><span class="s4">'utf-8'</span><span class="s2">) </span><span class="s0">as </span><span class="s1">file</span><span class="s2">:</span>
+            <span class="s0">return </span><span class="s1">json</span><span class="s2">.</span><span class="s1">load</span><span class="s2">(</span><span class="s1">file</span><span class="s2">)</span>
+    <span class="s0">except </span><span class="s1">FileNotFoundError</span><span class="s2">:</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;Файл data.json не найден&quot;</span><span class="s2">)</span>
+        <span class="s0">return </span><span class="s2">[]</span>
+    <span class="s0">except </span><span class="s1">json</span><span class="s2">.</span><span class="s1">JSONDecodeError</span><span class="s2">:</span>
+        <span class="s1">print</span><span class="s2">(</span><span class="s4">&quot;Ошибка в формате JSON&quot;</span><span class="s2">)</span>
+        <span class="s0">return </span><span class="s2">[]</span>
+
+
+<span class="s2">@</span><span class="s1">app</span><span class="s2">.</span><span class="s1">route</span><span class="s2">(</span><span class="s4">'/'</span><span class="s2">)</span>
+<span class="s0">def </span><span class="s1">index</span><span class="s2">():</span>
+    <span class="s0">return </span><span class="s1">render_template</span><span class="s2">(</span><span class="s4">'index.html'</span><span class="s2">)</span>
+
+
+<span class="s2">@</span><span class="s1">app</span><span class="s2">.</span><span class="s1">route</span><span class="s2">(</span><span class="s4">'/links'</span><span class="s2">)</span>
+<span class="s0">def </span><span class="s1">links</span><span class="s2">():</span>
+    <span class="s1">data </span><span class="s2">= </span><span class="s1">load_data</span><span class="s2">()</span>
+    <span class="s0">return </span><span class="s1">render_template</span><span class="s2">(</span><span class="s4">'links.html'</span><span class="s2">, </span><span class="s1">links</span><span class="s2">=</span><span class="s1">data</span><span class="s2">)</span>
+
+
+<span class="s2">@</span><span class="s1">app</span><span class="s2">.</span><span class="s1">route</span><span class="s2">(</span><span class="s4">'/image'</span><span class="s2">)</span>
+<span class="s0">def </span><span class="s1">image</span><span class="s2">():</span>
+    <span class="s0">return </span><span class="s1">render_template</span><span class="s2">(</span><span class="s4">'image.html'</span><span class="s2">)</span>
+
+
+<span class="s2">@</span><span class="s1">app</span><span class="s2">.</span><span class="s1">route</span><span class="s2">(</span><span class="s4">'/search'</span><span class="s2">, </span><span class="s1">methods</span><span class="s2">=[</span><span class="s4">'POST'</span><span class="s2">])</span>
+<span class="s0">def </span><span class="s1">search</span><span class="s2">():</span>
+    <span class="s1">query </span><span class="s2">= </span><span class="s1">request</span><span class="s2">.</span><span class="s1">json</span><span class="s2">.</span><span class="s1">get</span><span class="s2">(</span><span class="s4">'query'</span><span class="s2">, </span><span class="s4">''</span><span class="s2">).</span><span class="s1">lower</span><span class="s2">()</span>
+
+    <span class="s3"># Запрос к Google Custom Search API</span>
+    <span class="s1">search_url </span><span class="s2">= </span><span class="s4">f&quot;https://www.googleapis.com/customsearch/v1?q=</span><span class="s0">{</span><span class="s1">query</span><span class="s0">}</span><span class="s4">&amp;key=</span><span class="s0">{</span><span class="s1">API_KEY</span><span class="s0">}</span><span class="s4">&amp;cx=</span><span class="s0">{</span><span class="s1">CX_ID</span><span class="s0">}</span><span class="s4">&quot;</span>
+    <span class="s1">response </span><span class="s2">= </span><span class="s1">requests</span><span class="s2">.</span><span class="s1">get</span><span class="s2">(</span><span class="s1">search_url</span><span class="s2">)</span>
+
+    <span class="s3"># Обработка ответа от API</span>
+    <span class="s0">if </span><span class="s1">response</span><span class="s2">.</span><span class="s1">status_code </span><span class="s2">== </span><span class="s5">200</span><span class="s2">:</span>
+        <span class="s1">search_results </span><span class="s2">= </span><span class="s1">response</span><span class="s2">.</span><span class="s1">json</span><span class="s2">().</span><span class="s1">get</span><span class="s2">(</span><span class="s4">'items'</span><span class="s2">, [])</span>
+        <span class="s1">results </span><span class="s2">= [{</span><span class="s4">'title'</span><span class="s2">: </span><span class="s1">item</span><span class="s2">[</span><span class="s4">'title'</span><span class="s2">], </span><span class="s4">'link'</span><span class="s2">: </span><span class="s1">item</span><span class="s2">[</span><span class="s4">'link'</span><span class="s2">]} </span><span class="s0">for </span><span class="s1">item </span><span class="s0">in </span><span class="s1">search_results</span><span class="s2">]</span>
+    <span class="s0">else</span><span class="s2">:</span>
+        <span class="s1">results </span><span class="s2">= []</span>
+
+    <span class="s0">return </span><span class="s1">jsonify</span><span class="s2">(</span><span class="s1">results</span><span class="s2">)</span>
+
+
+<span class="s0">if </span><span class="s1">__name__ </span><span class="s2">== </span><span class="s4">'__main__'</span><span class="s2">:</span>
+    <span class="s1">app</span><span class="s2">.</span><span class="s1">run</span><span class="s2">(</span><span class="s1">debug</span><span class="s2">=</span><span class="s0">True</span><span class="s2">)</span>
+</pre>
+</body>
+</html>
